@@ -17,7 +17,7 @@ const client = redis.createClient({
     // host: 'redis-17853.c305.ap-south-1-1.ec2.cloud.redislabs.com',
     // port: 17853,
     // auth_pass: 'Gqg72jtv3tNzvk1iVKlYsgDjFFrDrqwu',
-    url: "redis://default:Gqg72jtv3tNzvk1iVKlYsgDjFFrDrqwu@redis-17853.c305.ap-south-1-1.ec2.cloud.redislabs.com:17853"
+    url: process.env.redisCloud
 })
 
 client.connect();
@@ -253,7 +253,7 @@ async function startServer() {
             }
             return { user };
         },
-        listen: { port: 8080 },
+        listen: { port: process.env.PORT },
 
     });
     console.log('Server is running on', url);
