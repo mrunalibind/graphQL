@@ -4,6 +4,7 @@ const authorSchema = new Schema({
     name: String,
     verified: Boolean,
     password: String,
+    email: String
     // reviews: Array
 })
 

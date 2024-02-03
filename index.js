@@ -7,6 +7,7 @@ import { ReviewModel } from './model/reviews.js';
 import { AuthorModel } from './model/authors.js';
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
+import nodemailer from "nodemailer";
 import { GraphQLError } from "graphql";
 import { } from 'dotenv/config'
 import express from "express";
@@ -14,9 +15,6 @@ import cors from "cors";
 import redis from "redis";
 
 const client = redis.createClient({
-    // host: 'redis-17853.c305.ap-south-1-1.ec2.cloud.redislabs.com',
-    // port: 17853,
-    // auth_pass: 'Gqg72jtv3tNzvk1iVKlYsgDjFFrDrqwu',
     url: process.env.redisCloud
 })
 
@@ -170,7 +168,35 @@ const resolvers = {
 
                 await client.disconnect();
 
+                // after Author creation author will get account successfull create message on their email
+
+                let transporter = nodemailer.createTransport({
+                    host: "smtp.gmail.com",
+                    port: process.env.nodemailerPORT,
+                    secure: false,
+                    auth: {
+                        user: "mrunalibind123@gmail.com",
+                        pass: process.env.nodemailerPASS
+                    }
+                })
+
+                const mailOptions = {
+                    from: 'mrunalibind123@gmail.com',
+                    to: author.email,
+                    subject: "Successfull Account creation",
+                    html: `<p>Congratulations on creating your account! As <strong><em>${author.name}</em></strong> once said, 'Every game is an opportunity to create a new world.' Start building your worlds now!</p>
+                    <p><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSww-GhyJdKtogTMOlAR1iReyp2QcdH3JuR2g&usqp=CAU" alt="GameZone"></p>`
+                };
+
+                transporter.sendMail(mailOptions, (error, info) => {
+                    if (error) {
+                        console.error(error);
+                    } else {
+                        console.log('Email sent');
+                    }
+                });
                 return { author, token };
+
             } catch (error) {
                 throw new Error(error);
             }
@@ -194,7 +220,7 @@ const resolvers = {
                         code: 'UNAUTHENTICATED',
                     },
                 });
-                let getToken=await client.get("token");
+                let getToken = await client.get("token");
                 let user = jwt.verify(getToken, process.env.secretKey);
                 args.review.author_id = user.authorId;
                 let review = await ReviewModel.create(args.review);
@@ -203,7 +229,6 @@ const resolvers = {
                 throw new Error(error);
             }
         }
-
     }
 }
 

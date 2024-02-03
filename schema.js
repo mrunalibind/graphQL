@@ -19,6 +19,7 @@ export const typeDefs = `#graphql
         name: String!,
         verified: Boolean!,
         password: String!,
+        email: String!
         reviews: [Review!]
     }
     type AuthWithToken {
@@ -45,7 +46,8 @@ export const typeDefs = `#graphql
     input AddAuthorInput {
         name: String!,
         verified: Boolean!,
-        password: String!
+        password: String!,
+        email: String!
     }
     input AddGameInput {
         title:String!,
