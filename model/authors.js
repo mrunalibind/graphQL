@@ -5,7 +5,8 @@ const authorSchema = new Schema({
     verified: Boolean,
     password: String,
     email: String
-    // reviews: Array
+},{
+    versionKey: false
 })
 
 const AuthorModel = model("author", authorSchema);

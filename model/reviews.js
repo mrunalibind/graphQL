@@ -5,6 +5,8 @@ const reviewSchema = new Schema({
     content: String,
     author_id: String,
     game_id: String,
+},{
+    versionKey: false
 })
 
 const ReviewModel = model("review", reviewSchema);

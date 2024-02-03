@@ -4,6 +4,8 @@ const gameSchema = new Schema({
     title: String,
     platform: Array,
     // reviews: Array
+},{
+    versionKey: false
 })
 
 const GameModel = model("game", gameSchema);
