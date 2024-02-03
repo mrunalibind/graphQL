@@ -12,7 +12,23 @@ import { } from 'dotenv/config'
 import express from "express";
 import cors from "cors";
 import redis from "redis";
-const client = redis.createClient()
+
+const client = redis.createClient({
+    // host: 'redis-17853.c305.ap-south-1-1.ec2.cloud.redislabs.com',
+    // port: 17853,
+    // auth_pass: 'Gqg72jtv3tNzvk1iVKlYsgDjFFrDrqwu',
+    url: "redis://default:Gqg72jtv3tNzvk1iVKlYsgDjFFrDrqwu@redis-17853.c305.ap-south-1-1.ec2.cloud.redislabs.com:17853"
+})
+
+client.connect();
+
+client.on('connect', () => {
+    console.log('Connected to Redis Cloud');
+});
+
+client.on('error', (err) => {
+    console.error('Redis Cloud Error:', err);
+});
 
 const app = express();
 app.use(cors());
@@ -128,7 +144,6 @@ const resolvers = {
         },
         async addAuthor(_, args) {
             try {
-
                 const hashedPassword = await new Promise((resolve, reject) => {
                     bcrypt.hash(args.author.password, 5, (err, hash) => {
                         if (err) {
@@ -145,17 +160,21 @@ const resolvers = {
 
                 // Create a unique token for the author
                 const token = jwt.sign({ authorId: author._id }, process.env.secretKey);
-                client.connect();
 
                 // Storing token in redis with expiry 10 min
-                client.set("token",token, "EX", 600*10);
-                client.disconnect();
+                client.set("token", token, "EX", 60 * 10);
+
+                // Retrieving token from Redis
+                let storeToken = await client.get("token");
+                console.log("Got successfully from redis", storeToken);
+
+                await client.disconnect();
 
                 return { author, token };
             } catch (error) {
                 throw new Error(error);
             }
-            
+
         },
         async updateGame(_, args) {
             try {
@@ -175,6 +194,9 @@ const resolvers = {
                         code: 'UNAUTHENTICATED',
                     },
                 });
+                let getToken=await client.get("token");
+                let user = jwt.verify(getToken, process.env.secretKey);
+                args.review.author_id = user.authorId;
                 let review = await ReviewModel.create(args.review);
                 return await ReviewModel.findOne({ _id: review._id })
             } catch (error) {

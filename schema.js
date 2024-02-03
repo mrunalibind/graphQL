@@ -58,7 +58,7 @@ export const typeDefs = `#graphql
     input AddReviewInput {
         rating: Int!,
         content: String!,
-        author_id: String!,
+        # author_id: String!,
         game_id: String!
     }
 `
